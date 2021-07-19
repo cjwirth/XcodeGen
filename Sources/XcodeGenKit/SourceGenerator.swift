@@ -66,15 +66,24 @@ class SourceGenerator {
         // Get the local package's relative path from the project root
         let fileReferencePath = try? absolutePath.relativePath(from: projectDirectory ?? project.basePath).string
 
-        let fileReference = addObject(
-            PBXFileReference(
-                sourceTree: .sourceRoot,
-                name: absolutePath.lastComponent,
-                lastKnownFileType: "folder",
-                path: fileReferencePath
+        let existsAlready = pbxProj.fileReferences.contains(where: {
+            $0.sourceTree == .sourceRoot
+                && $0.name == absolutePath.lastComponent
+                && $0.lastKnownFileType == "folder"
+                && $0.path == fileReferencePath
+        })
+
+        if !existsAlready {
+            let fileReference = addObject(
+                PBXFileReference(
+                    sourceTree: .sourceRoot,
+                    name: absolutePath.lastComponent,
+                    lastKnownFileType: "folder",
+                    path: fileReferencePath
+                )
             )
-        )
-        localPackageGroup!.children.append(fileReference)
+            localPackageGroup!.children.append(fileReference)
+        }
     }
 
     /// Collects an array complete of all `SourceFile` objects that make up the target based on the provided `TargetSource` definitions.
